@@ -1,12 +1,26 @@
 package com.example.spring_security.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.*;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @Author wenyabing
@@ -37,7 +51,61 @@ public class MyWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated()
                 .and()
                 .formLogin()
+                .loginPage("/login_page")
                 .loginProcessingUrl("/login")
+                .usernameParameter("username")
+                .passwordParameter("password")
+                .successHandler(new AuthenticationSuccessHandler() {
+                    @Override
+                    public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+                        /**
+                         *获取当前登录用户的信息
+                         */
+                        Object principal = authentication.getPrincipal();
+                        httpServletResponse.setContentType("application/json;charset=utf-8");
+                        httpServletResponse.setStatus(200);
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("status", 200);
+                        map.put("message", principal);
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        String string = objectMapper.writeValueAsString(map);
+                        PrintWriter printWriter = httpServletResponse.getWriter();
+                        printWriter.write(string);
+                        printWriter.flush();
+                        printWriter.close();
+
+                    }
+                })
+                .failureHandler(new AuthenticationFailureHandler() {
+                    @Override
+                    public void onAuthenticationFailure(HttpServletRequest httpServletRequest,
+                                                        HttpServletResponse httpServletResponse,
+                                                        AuthenticationException e) throws IOException, ServletException {
+                        httpServletResponse.setContentType("application/json;charset=utf-8");
+                        httpServletResponse.setStatus(401);
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("status", 401);
+                        if (e instanceof LockedException) {
+                            map.put("message", "账户被锁定，登录失败！");
+                        } else if (e instanceof BadCredentialsException) {
+                            map.put("message", "用户名或密码错误，登录失败！");
+                        } else if (e instanceof DisabledException) {
+                            map.put("message", "账户被禁用，登录失败！");
+                        } else if (e instanceof AccountExpiredException) {
+                            map.put("message", "账户已过期，登录失败！");
+                        } else if (e instanceof CredentialsExpiredException) {
+                            map.put("message", "密码已过期，登录失败！");
+                        } else {
+                            map.put("message", "登录失败!");
+                        }
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        String string = objectMapper.writeValueAsString(map);
+                        PrintWriter printWriter = httpServletResponse.getWriter();
+                        printWriter.write(string);
+                        printWriter.flush();
+                        printWriter.close();
+                    }
+                })
                 .permitAll()
                 .and()
                 .csrf()
