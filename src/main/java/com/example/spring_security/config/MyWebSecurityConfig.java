@@ -1,6 +1,8 @@
 package com.example.spring_security.config;
 
+import com.example.spring_security.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.*;
@@ -30,6 +32,8 @@ import java.util.Map;
  */
 @Configuration
 public class MyWebSecurityConfig extends WebSecurityConfigurerAdapter {
+    @Autowired
+    private UserService userService;
     /*@Bean
     PasswordEncoder passwordEncoder() {
         return NoOpPasswordEncoder.getInstance();
@@ -47,11 +51,11 @@ public class MyWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication().withUser("admin").password("$2a$10$Tgj7SYjbvRNe0yLgdNyocejhnvcCNpjknqY7cjvC3NfgITOscISr6").roles("ADMIN")
-                .and()
-//                .withUser("lisi").password("123").roles("DBA");
-                .withUser("lisi").password("$2a$10$vUlO./MiALLX6/vu3JS9guBBs7xDW6O.35vSzr57OGDvfZ3bLwwn2").roles("DBA");
-
+//        auth.inMemoryAuthentication().withUser("admin").password("$2a$10$Tgj7SYjbvRNe0yLgdNyocejhnvcCNpjknqY7cjvC3NfgITOscISr6").roles("ADMIN")
+//                .and()
+////                .withUser("lisi").password("123").roles("DBA");
+//                .withUser("lisi").password("$2a$10$vUlO./MiALLX6/vu3JS9guBBs7xDW6O.35vSzr57OGDvfZ3bLwwn2").roles("DBA");
+        auth.userDetailsService(userService);
     }
 
     @Override
@@ -65,7 +69,7 @@ public class MyWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .formLogin()
 //                .loginPage("/login_page")
-//                .loginProcessingUrl("/login")
+                .loginProcessingUrl("/login")
 //                .usernameParameter("username")
 //                .passwordParameter("password")
                 .successHandler(new AuthenticationSuccessHandler() {

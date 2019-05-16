@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.spring_security.dao.UserMapper">
+    <resultMap id="baseResultMap" type="com.example.spring_security.entity.User">
+        <id column="id" property="id" />
+        <result column="username" property="username" />
+        <result column="password" property="password" />
+        <result column="enabled" property="isEnabled" />
+        <result column="locked" property="locked" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    <sql id="base_column_list">
+            id, username, password, enabled, locked, create_time, update_time
+
+    </sql>
+    <select id="loadUserByUsername" parameterType="java.lang.String" resultMap="baseResultMap">
+        SELECT
+        <include refid="base_column_list" />
+        from tb_user
+        where username=#{username}
+    </select>
+
+    <select id="getUserRolesByUid" parameterType="java.lang.Integer"
+        resultType="com.example.spring_security.entity.Role">
+        select r.id, r.role, r.role_name AS roleName
+        FROM tb_role r,tb_user_role ur
+        where r.id = ur.rid and ur.uid = #{uid}
+    </select>
+
+</mapper>
