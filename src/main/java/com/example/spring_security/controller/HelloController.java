@@ -1,5 +1,7 @@
 package com.example.spring_security.controller;
 
+import com.example.spring_security.service.MethodService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
@@ -10,6 +12,9 @@ import org.springframework.web.servlet.ModelAndView;
  */
 @RestController
 public class HelloController {
+    @Autowired
+    private MethodService methodService;
+
     @GetMapping("/hello")
     public String hello() {
         return "hello";
@@ -17,17 +22,17 @@ public class HelloController {
 
     @GetMapping("/admin/hello")
     public String helloAdmin() {
-        return "hello admin!";
+        return methodService.helloAdmin();
     }
 
     @GetMapping("/DBA/hello")
     public String helloDBA() {
-        return "hello DBA";
+        return methodService.helloDBA();
     }
 
     @GetMapping("/user/hello")
     public String helloUser() {
-        return "hello user!";
+        return methodService.helloUser();
     }
 
     @GetMapping("/login_page")
