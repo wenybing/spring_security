@@ -2,6 +2,7 @@ package com.example.spring_security.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 /**
  * @Author wenyabing
@@ -27,5 +28,10 @@ public class HelloController {
     @GetMapping("/user/hello")
     public String helloUser() {
         return "hello user!";
+    }
+
+    @GetMapping("/login_page")
+    public ModelAndView login() {
+        return new ModelAndView("login_page");
     }
 }

@@ -6,3 +6,12 @@ spring:
       name: zhangsan
       password: 123
       roles: USER
+  thymeleaf:
+    cache: true                       #开启缓存
+    check-template: true              #检查模板
+    check-template-location: true     #检查模板位置
+    encoding: UTF-8                   #模板文件编码
+    prefix: classpath:/templates/     #模板文件前缀
+    suffix: .html                     #模板文件后缀
+    servlet:
+      content-type: text/html
