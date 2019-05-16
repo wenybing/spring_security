@@ -1,0 +1,8 @@
+server:
+  port: 8081
+spring:
+  security:
+    user:
+      name: zhangsan
+      password: 123
+      roles: USER
