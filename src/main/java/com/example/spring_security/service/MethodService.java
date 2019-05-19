@@ -1,8 +1,5 @@
 package com.example.spring_security.service;
 
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PostAuthorize;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 /**
@@ -11,17 +8,17 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class MethodService {
-    @PreAuthorize("hasAnyRole('ADMIN','USER','DBA')")
+    //    @PreAuthorize("hasAnyRole('ADMIN','USER','DBA')")
     public String helloUser() {
         return "hello user!";
     }
 
-    @PostAuthorize("hasRole('DBA')")
+    //    @PostAuthorize("hasAnyRole('ADMIN','DBA')")
     public String helloDBA() {
         return "hello DBA";
     }
 
-    @Secured("ROLE_ADMIN")
+    //    @Secured("ROLE_ADMIN")
     public String helloAdmin() {
         return "hello admin!";
     }

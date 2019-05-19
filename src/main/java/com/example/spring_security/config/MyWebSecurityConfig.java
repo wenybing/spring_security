@@ -1,11 +1,17 @@
 package com.example.spring_security.config;
 
+import com.example.spring_security.custom.CustomAccessDecisionManager;
+import com.example.spring_security.custom.CustomFilterInvocationSecurityMetadataSource;
 import com.example.spring_security.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.AccessDecisionManager;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.*;
+import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -13,6 +19,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -34,10 +42,6 @@ import java.util.Map;
 public class MyWebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private UserService userService;
-    /*@Bean
-    PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
-    }*/
 
     /**
      * 密码加密
@@ -51,21 +55,30 @@ public class MyWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-//        auth.inMemoryAuthentication().withUser("admin").password("$2a$10$Tgj7SYjbvRNe0yLgdNyocejhnvcCNpjknqY7cjvC3NfgITOscISr6").roles("ADMIN")
+//        auth.inMemoryAuthentication().withUser("admin").password("$2a$10$K0uU50HPrlkFdij/vVdckuV2Waja3Wza6Jb3YulDk/f51.7tEjumG").roles("ADMIN")
 //                .and()
-////                .withUser("lisi").password("123").roles("DBA");
-//                .withUser("lisi").password("$2a$10$vUlO./MiALLX6/vu3JS9guBBs7xDW6O.35vSzr57OGDvfZ3bLwwn2").roles("DBA");
+//                .withUser("root").password("$2a$10$K0uU50HPrlkFdij/vVdckuV2Waja3Wza6Jb3YulDk/f51.7tEjumG").roles("DBA")
+//                .and()
+//                .withUser("user").password("$2a$10$K0uU50HPrlkFdij/vVdckuV2Waja3Wza6Jb3YulDk/f51.7tEjumG").roles("USER");
         auth.userDetailsService(userService);
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/admin/*").hasAnyRole("ADMIN")
-                .antMatchers("/user/*").access("hasAnyRole('ADMIN','USER')")
-                .antMatchers("/db/*").access("hasAnyRole('ADMIN') and hasRole('DBA')")
+                /*.antMatchers("/admin/*").hasAnyRole("ADMIN")
+                .antMatchers("/user/*").access("hasAnyRole('ADMIN','DBA','USER')")
+                .antMatchers("/db/*").access("hasAnyRole('ADMIN','DBA')")
                 .anyRequest()
-                .authenticated()
+                .authenticated()*/
+                .withObjectPostProcessor(new ObjectPostProcessor<FilterSecurityInterceptor>() {
+                    @Override
+                    public <O extends FilterSecurityInterceptor> O postProcess(O o) {
+                        o.setSecurityMetadataSource(filterInvocationSecurityMetadataSource());
+                        o.setAccessDecisionManager(accessDecisionManager());
+                        return o;
+                    }
+                })
                 .and()
                 .formLogin()
 //                .loginPage("/login_page")
@@ -144,5 +157,29 @@ public class MyWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .csrf()
                 .disable();
+    }
+
+
+    /**
+     * 角色继承
+     *
+     * @return
+     */
+    @Bean
+    RoleHierarchy roleHierarchy() {
+        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+        String hierarchy = "ROLE_ADMIN > ROLE_DBA ROLE_ABD >ROLE_USER";
+        roleHierarchy.setHierarchy(hierarchy);
+        return roleHierarchy;
+    }
+
+    @Bean
+    FilterInvocationSecurityMetadataSource filterInvocationSecurityMetadataSource() {
+        return new CustomFilterInvocationSecurityMetadataSource();
+    }
+
+    @Bean
+    AccessDecisionManager accessDecisionManager() {
+        return new CustomAccessDecisionManager();
     }
 }

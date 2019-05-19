@@ -25,7 +25,7 @@ public class HelloController {
         return methodService.helloAdmin();
     }
 
-    @GetMapping("/DBA/hello")
+    @GetMapping("/db/hello")
     public String helloDBA() {
         return methodService.helloDBA();
     }
